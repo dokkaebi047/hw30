@@ -7,10 +7,10 @@ class TaskItem extends StatelessWidget {
   final VoidCallback onDelete;
 
   const TaskItem({
+    super.key,
     required this.task,
     required this.onToggle,
     required this.onDelete,
-    super.key,
   });
 
   @override
@@ -19,17 +19,27 @@ class TaskItem extends StatelessWidget {
       title: Text(
         task.title,
         style: TextStyle(
-          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-          color: task.isCompleted ? Colors.grey : null,
+          decoration: task.isCompleted
+              ? TextDecoration.lineThrough
+              : TextDecoration.none,
+          color: task.isCompleted ? Colors.grey : Colors.black,
         ),
       ),
-      leading: Checkbox(
-        value: task.isCompleted,
-        onChanged: (_) => onToggle(),
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete, color: Colors.red),
-        onPressed: onDelete,
+      subtitle: Text('Категория: ${task.category}'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(task.isCompleted
+                ? Icons.check_box
+                : Icons.check_box_outline_blank),
+            onPressed: onToggle,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: onDelete,
+          ),
+        ],
       ),
     );
   }

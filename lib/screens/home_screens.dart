@@ -10,39 +10,71 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Task> _tasks = [
-    Task(title: 'Купить молоко'),
-    Task(title: 'Почитать книгу'),
-    Task(title: 'Позвонить другу'),
+  final List<Task> tasks = [
+    Task(title: 'Купить молоко', category: 'Покупки'),
+    Task(title: 'Встреча с другом', category: 'Встречи'),
+    Task(title: 'Закончить проект', category: 'Работа'),
+    Task(title: 'Прочитать книгу', category: 'Обучение'),
   ];
 
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController taskController = TextEditingController();
+  String selectedCategory = 'Все задачи';
+  final List<String> categories = [
+    'Все задачи',
+    'Покупки',
+    'Встречи',
+    'Работа',
+    'Обучение'
+  ];
+  String newTaskCategory = 'Покупки';
 
   void _addTask() {
-    if (_controller.text.isNotEmpty) {
+    if (taskController.text.isNotEmpty) {
       setState(() {
-        _tasks.add(Task(title: _controller.text));
-        _controller.clear();
+        tasks.add(Task(title: taskController.text, category: newTaskCategory));
+        taskController.clear();
       });
     }
   }
 
-  void _toggleTask(int index) {
+  void _toggleTaskCompletion(int index) {
     setState(() {
-      _tasks[index].isCompleted = !_tasks[index].isCompleted;
+      tasks[index].isCompleted = !tasks[index].isCompleted;
     });
   }
 
   void _deleteTask(int index) {
     setState(() {
-      _tasks.removeAt(index);
+      tasks.removeAt(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Task> filteredTasks = selectedCategory == 'Все задачи'
+        ? tasks
+        : tasks.where((task) => task.category == selectedCategory).toList();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Список задач')),
+      appBar: AppBar(
+        title: const Text('TODO-лист'),
+        actions: [
+          DropdownButton<String>(
+            value: selectedCategory,
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedCategory = newValue!;
+              });
+            },
+            items: categories.map<DropdownMenuItem<String>>((String category) {
+              return DropdownMenuItem<String>(
+                value: category,
+                child: Text(category),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -51,25 +83,41 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _controller,
+                    controller: taskController,
                     decoration:
                         const InputDecoration(labelText: 'Новая задача'),
                   ),
                 ),
+                DropdownButton<String>(
+                  value: newTaskCategory,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      newTaskCategory = newValue!;
+                    });
+                  },
+                  items: categories
+                      .sublist(1)
+                      .map<DropdownMenuItem<String>>((String category) {
+                    return DropdownMenuItem<String>(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                ),
                 IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: _addTask,
-                )
+                ),
               ],
             ),
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: _tasks.length,
+              itemCount: filteredTasks.length,
               itemBuilder: (context, index) {
                 return TaskItem(
-                  task: _tasks[index],
-                  onToggle: () => _toggleTask(index),
+                  task: filteredTasks[index],
+                  onToggle: () => _toggleTaskCompletion(index),
                   onDelete: () => _deleteTask(index),
                 );
               },
