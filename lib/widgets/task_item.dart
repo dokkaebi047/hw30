@@ -3,15 +3,13 @@ import '../models/task.dart';
 
 class TaskItem extends StatelessWidget {
   final Task task;
-  final VoidCallback onToggle;
-  final VoidCallback onDelete;
+  final VoidCallback onToggleComplete;
+  final VoidCallback onDeleteTask;
 
-  const TaskItem({
-    super.key,
-    required this.task,
-    required this.onToggle,
-    required this.onDelete,
-  });
+  const TaskItem(
+      {required this.task,
+      required this.onToggleComplete,
+      required this.onDeleteTask});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +23,8 @@ class TaskItem extends StatelessWidget {
           color: task.isCompleted ? Colors.grey : Colors.black,
         ),
       ),
-      subtitle: Text('Категория: ${task.category}'),
+      subtitle: Text(
+          'Категория: ${task.category} | Дедлайн: ${task.formattedDeadline}'),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -33,11 +32,11 @@ class TaskItem extends StatelessWidget {
             icon: Icon(task.isCompleted
                 ? Icons.check_box
                 : Icons.check_box_outline_blank),
-            onPressed: onToggle,
+            onPressed: onToggleComplete,
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: onDelete,
+            onPressed: onDeleteTask,
           ),
         ],
       ),
