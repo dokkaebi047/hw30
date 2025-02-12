@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
-import '../widgets/task_form.dart';
 import '../widgets/task_list.dart';
+import '../widgets/task_form.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Task> tasks = [
-    Task(title: 'Купить молоко', category: 'Покупки'),
+  final List<Task> tasks = [
+    Task(
+        title: 'Купить молоко',
+        category: 'Покупки',
+        deadline: DateTime.now().add(Duration(days: 2))),
     Task(title: 'Встреча с другом', category: 'Встречи'),
-    Task(title: 'Закончить проект', category: 'Работа'),
+    Task(
+        title: 'Закончить проект',
+        category: 'Работа',
+        deadline: DateTime.now().add(Duration(days: 5))),
     Task(title: 'Прочитать книгу', category: 'Обучение'),
   ];
 
@@ -31,9 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _toggleTaskCompletion(int index) {
+  void _editTask(int index, Task updatedTask) {
     setState(() {
-      tasks[index].isCompleted = !tasks[index].isCompleted;
+      tasks[index] = updatedTask;
     });
   }
 
@@ -45,6 +53,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    tasks.sort((a, b) {
+      if (a.deadline == null && b.deadline == null)
+        return a.title.compareTo(b.title);
+      if (a.deadline == null) return 1;
+      if (b.deadline == null) return -1;
+      return a.deadline!.compareTo(b.deadline!);
+    });
+
     List<Task> filteredTasks = selectedCategory == 'Все задачи'
         ? tasks
         : tasks.where((task) => task.category == selectedCategory).toList();
@@ -60,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 selectedCategory = newValue!;
               });
             },
-            items: categories.map<DropdownMenuItem<String>>((String category) {
+            items: categories.map((String category) {
               return DropdownMenuItem<String>(
                 value: category,
                 child: Text(category),
@@ -69,17 +85,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          TaskForm(onAddTask: _addTask, categories: categories),
-          Expanded(
-            child: TaskList(
-              tasks: filteredTasks,
-              onToggleComplete: _toggleTaskCompletion,
-              onDeleteTask: _deleteTask,
-            ),
-          ),
-        ],
+      body: TaskList(
+          tasks: filteredTasks, onEdit: _editTask, onDelete: _deleteTask),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          builder: (context) => TaskForm(onSubmit: _addTask),
+        ),
+        child: const Icon(Icons.add),
       ),
     );
   }
